@@ -13,7 +13,7 @@ public class SignalHandler {
         if (dwCtrlType == 2 || dwCtrlType == 0) { // SIGTERM or Ctrl+C
             Console.WriteLine("SIGTERM or Ctrl+C received. Cleaning up...");
             Environment.SetEnvironmentVariable("PS_SCRIPT_EXIT", "1");
-            return false;
+            return true;
         }
         return true;
     }
@@ -34,13 +34,15 @@ if($env:PS_SCRIPT_EXIT -eq "1") {
 
 Write-Host "Hello from test script"
 Write-Host "Pwsh Process ID: $PID"
+# python scripts/test-python.py
+
 
 $RESULT_PATH = "results"
 $LOGGING_NAME = "test-one"
 $SUITE_NAME = "test-one"
 New-Item -Force $RESULT_PATH/$LOGGING_NAME.txt | Out-Null
 
-python -m pytest -rpP -v `
+python -m pytest test/${SUITE_NAME} -rpP -v `
 --log-file "${RESULT_PATH}/${LOGGING_NAME}.log" `
 --junitxml "${RESULT_PATH}/${LOGGING_NAME}.xml" `
 -o junit_suite_name=${SUITE_NAME} `

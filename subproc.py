@@ -1,3 +1,4 @@
+import signal
 import subprocess
 
 
@@ -8,20 +9,19 @@ class SubProc:
     
     def start_process(self):
         self.process = subprocess.Popen(
-            self.cmd,
-            shell=True,
+            self.cmd
         )
         
     def wait_for_status(self):
         try:
             self.process.communicate(timeout=self.task_timeout)
         except subprocess.TimeoutExpired:
-            self.process.terminate()
+            self.process.send_signal(signal.CTRL_C_EVENT)
             raise Exception('Task terminated due to timeout.')
 
 
 if __name__ == '__main__':
-    cmd = 'pwsh scripts/test-script.ps1'
+    cmd = 'pwsh test-script.ps1'
     subproc = SubProc(cmd, task_timeout=5)
     subproc.start_process()
     subproc.wait_for_status()

@@ -1,6 +1,7 @@
 import signal
 import psutil
 import os
+import platform
 
 class PS_Util:
     def __init__(self, cmd, timeout=60):
@@ -34,45 +35,34 @@ class PS_Util:
         for p in children:
             try:
                 print("killing process: ", p)
-                #p.terminate()
-                #p.wait(timeout=30)
-                #os.kill(p.pid, signal.SIGINT)
-                p.send_signal(signal.CTRL_C_EVENT)
-                # while p.is_running():
-                #     p.wait(timeout=60)
-                # time.sleep(30)
-                # if p.is_running():
-                #    p.terminate()
-                   #p.wait(timeout=30)
-            except Exception as e:
+                if platform.system() == 'Windows':
+                    p.send_signal(signal.CTRL_C_EVENT)
+                else:
+                    p.send_signal(signal.SIGINT)
+            except psutil.TimeoutExpired as e:
                 print("Error: ", e)
                 pass
-        # gone, alive = psutil.wait_procs(children, timeout=timeout,
-        #                                 callback=on_terminate)
-        # print("gone: ", gone)
-        # print("alive: ", alive)
-        #return (gone, alive)
 
     def on_terminate(self, proc):
         print("process {} terminated with exit code {}".format(proc, proc.returncode))
 
 if __name__ == '__main__':
     print("Script id: ", os.getpid())
-    #cmd = 'pwsh test-script.ps1'
+    cmd = 'pwsh test-script.ps1'
     #cmd = 'python -m pytest -s'
-    result_path = 'results'
-    logging_name = 'test_one'
-    suite_name = 'test_one'
-    test_suite_dir = 'test/test-one'
-    cmd = f"mkdir {result_path}"
-    cmd += (
-        f" && python -m pytest {test_suite_dir} -rpP -v  "
-        f"--log-file {result_path}/{logging_name}.log "
-        f"--junitxml {result_path}/{logging_name}.xml "
-        f"-o junit_suite_name={suite_name} "
-        f"-o junit_family=xunit1 "
-        f"--capture=tee-sys > {result_path}/{logging_name}.txt"
-        )
+    # result_path = 'results'
+    # logging_name = 'test_one'
+    # suite_name = 'test_one'
+    # test_suite_dir = 'test/test-one'
+    # cmd = f"mkdir {result_path}"
+    # cmd += (
+    #     f" && python -m pytest {test_suite_dir} -rpP -v  "
+    #     f"--log-file {result_path}/{logging_name}.log "
+    #     f"--junitxml {result_path}/{logging_name}.xml "
+    #     f"-o junit_suite_name={suite_name} "
+    #     f"-o junit_family=xunit1 "
+    #     f"--capture=tee-sys > {result_path}/{logging_name}.txt"
+    #     )
     #print("cmd: ", cmd)
     ps_util = PS_Util(cmd, timeout=5)
     ps_util.start_process()
