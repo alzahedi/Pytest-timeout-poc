@@ -24,10 +24,10 @@ class PS_Util:
             
         
     def kill_proc_tree(self, pid, sig=signal.SIGTERM, include_parent=False, recursive=True):
-        """Kill a process tree (including grandchildren) with signal
-        "sig" and return a (gone, still_alive) tuple.
-        "on_terminate", if specified, is a callback function which is
-        called as soon as a child terminates.
+        """
+        Kill a process tree (including grandchildren) with signal sig (default is SIGTERM). 
+        If include_parent is True, include the parent process in the kill.
+        If recursive is True, kill the entire process tree rooted at pid, else kill just the children of pid.
         """
         assert pid != os.getpid(), "won't kill myself"
         parent = psutil.Process(pid)
