@@ -1,4 +1,39 @@
-# Add .NET class to handle signals
+$UNIX_PLATFORM = 'Unix'
+$os_name = [environment]::OSVersion.Platform
+
+if ($os_name -eq $UNIX_PLATFORM) {
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class SignalHandler {
+    // Import the signal function from libc
+    [DllImport("libc.so.6", SetLastError = true)]
+    public static extern int signal(int signum, SignalHandler.HandlerRoutine handler);
+
+    // Define the delegate for handling signals
+    public delegate void HandlerRoutine(int signum);
+
+    // Signal constants (SIGTERM, SIGINT)
+    public const int SIGTERM = 15;
+    public const int SIGINT = 2;
+
+    // The handler method that will be called when a signal is received
+    public static void Handler(int signum) {
+        if (signum == SIGTERM || signum == SIGINT) {
+            Console.WriteLine("SIGTERM or SIGINT received. Cleaning up...");
+            Environment.SetEnvironmentVariable("PS_SCRIPT_EXIT", "1");
+        }
+    }
+
+    // Register the signal handler
+    public static void Register() {
+        signal(SIGTERM, new HandlerRoutine(Handler));
+        signal(SIGINT, new HandlerRoutine(Handler));
+    }
+}
+"@
+} else {
 Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
@@ -23,6 +58,7 @@ public class SignalHandler {
     }
 }
 "@
+}
 
 # Register the handler
 [SignalHandler]::Register()
