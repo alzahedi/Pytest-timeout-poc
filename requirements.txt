@@ -1,2 +1,2 @@
-psutil
-pytest
+psutil==6.1.0
+pytest==7.1.3

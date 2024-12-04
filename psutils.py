@@ -39,9 +39,24 @@ class PS_Util:
             try:
                 print("killing process: ", p)
                 p.send_signal(sig)
+                #print(p.is_running())
             except psutil.TimeoutExpired as e:
                 print("Error: ", e)
                 pass
+        
+        wait_timeout = 30
+        # Wait for processes to terminate
+        for p in children:
+            try:
+                print(f"Waiting for process {p} to terminate...")
+                p.wait(timeout=wait_timeout)
+            except psutil.TimeoutExpired:
+                print(f"Process {p} did not terminate within {wait_timeout} seconds.")
+            except psutil.NoSuchProcess:
+                print(f"Process {p} already exited.")
+            except KeyboardInterrupt as e:
+                pass
+            print(f"Is process {p} running: {p.is_running()}")
 
     def on_terminate(self, proc):
         print("process {} terminated with exit code {}".format(proc, proc.returncode))
